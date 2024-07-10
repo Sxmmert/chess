@@ -8,7 +8,8 @@ class Knight(Piece):
     def __repr__(self):
         return f"{self.team} knight at ({self.pos})"
     
-    def available_moves(self, piece_locations):
+    def get_available_moves(self):
+        piece_locations = self.game.piece_locations
         self.available_moves_rect = []
         available_moves = []
         moves = [
@@ -23,7 +24,5 @@ class Knight(Piece):
                 if piece_locations[idx] == 0 or piece_locations[idx].team != self.team:
                     available_moves.append([row, col])
         
-        for move in available_moves:
-            self.available_moves_rect.append(pygame.Rect(move[1] * 75, move[0] * 75, 75, 75))
-        
-        return available_moves
+        self.available_moves = available_moves
+        self.make_rect()

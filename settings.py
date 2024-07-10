@@ -1,10 +1,20 @@
+import pygame
 class Settings:
     def __init__(self):
         self.screen_width = 600
         self.screen_heigth = 600
+        self.screen_width_side_screen = 200
+        self.screen_height_side_screen = 200
 
-        self.bg_color = (0, 0, 0)
+        self.bg_color = "#D6D4A0"
         self.FPS = 60
+
+        self.right_border_color = "#664147"
+        self.under_border_color = "#2F9C95"
+        self.under_right_border_color = "#565264"
+
+        self.forfeit_font = pygame.font.Font('freesansbold.ttf', 36)
+        self.turn_font = pygame.font.Font('freesansbold.ttf', 36)
 
         self.white_bg_color = (118,150,86)
         self.black_bg_color = (255,255,255)

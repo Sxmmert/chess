@@ -4,11 +4,13 @@ import pygame
 class Rook(Piece):
     def __init__(self, team, pos, game):
         super().__init__("rook", team, pos, game)
+        
 
     def __repr__(self):
         return f"{self.team} rook at ({self.pos})"
     
-    def available_moves(self, piece_locations):
+    def get_available_moves(self):
+        piece_locations = self.game.piece_locations
         self.available_moves_rect = []
         available_moves = []
 
@@ -33,7 +35,5 @@ class Rook(Piece):
                 else:
                     break
 
-        for move in available_moves:
-            self.available_moves_rect.append(pygame.Rect(move[1] * 75, move[0] * 75, 75, 75))
-
-        return available_moves
+        self.available_moves = available_moves
+        self.make_rect()
