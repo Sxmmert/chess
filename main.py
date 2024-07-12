@@ -8,22 +8,10 @@ from rook import Rook
 from bishop import Bishop
 from king import King
 from knight import Knight
-from queen import Queen#
-
-# TO DO
-# 1. Available Moves when in check
-# 3. Unhardcode small image
-# 4. Unhardcode font size
-# 5. Unhardcode (marges) side screen
-# 6. Add winner code
-# 7. Add Forfeit code
-# 8. Add Pawn promotion code
-
-# Hard Bonus Ai
+from queen import Queen
 
 class Chess:
     def __init__(self):
-        #initialize game
         pygame.init()
         self.settings = Settings()
         self.screen = pygame.display.set_mode(
@@ -44,7 +32,6 @@ class Chess:
         self.playing = True
         self.winner = None
         
-        #initialize pieces
         self.piece_locations = [0] * 64
         self.initialize_pieces()
 
@@ -55,7 +42,6 @@ class Chess:
                 else:
                     self.king_black = piece
         
-        #initialize grid
         self.grid_cells = []
         self.initialize_grid()
 
@@ -100,7 +86,7 @@ class Chess:
     
     def check_events(self):
         for event in pygame.event.get():
-            if event.type == pygame.QUIT: # Quit the game
+            if event.type == pygame.QUIT:
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 self.check_event_mousedown(event)
@@ -109,7 +95,7 @@ class Chess:
                 print(self.en_passant_move)
 
     def check_event_mousedown(self, event):
-        if event.button == 1:  # Left mouse button
+        if event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
             
             if(mouse_pos[0] < self.settings.screen_width and mouse_pos[1] < self.settings.screen_heigth):
@@ -151,7 +137,6 @@ class Chess:
         under_right_border_rect = pygame.Rect(self.settings.screen_width, self.settings.screen_heigth,
                                 self.settings.screen_width_side_screen, self.settings.screen_height_side_screen)
         if under_right_border_rect.collidepoint(mouse_pos):
-            # FORFEIT
             print("FORFEIT")
             pass
 

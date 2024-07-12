@@ -13,12 +13,7 @@ class King(Piece):
         piece_locations = self.game.piece_locations
         self.available_moves_rect = []
         available_moves = []
-
-        # Define direction vectors for king movements
-        directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1),  # Rook-like directions
-            (1, 1), (1, -1), (-1, 1), (-1, -1)  # Bishop-like directions
-        ]
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 
         for direction in directions:
             row = self.pos[0] + direction[0]

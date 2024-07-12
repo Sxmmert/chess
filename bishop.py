@@ -1,5 +1,4 @@
 from piece import Piece
-import pygame
 
 class Bishop(Piece):
     def __init__(self, team, pos, game):

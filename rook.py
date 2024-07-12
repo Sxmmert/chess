@@ -1,5 +1,4 @@
 from piece import Piece
-import pygame
 
 class Rook(Piece):
     def __init__(self, team, pos, game):
@@ -13,11 +12,7 @@ class Rook(Piece):
         piece_locations = self.game.piece_locations
         self.available_moves_rect = []
         available_moves = []
-
-        # Define direction vectors for rook movements
-        directions = [
-            (1, 0), (-1, 0), (0, 1), (0, -1)  # Rook directions
-        ]
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
 
         for direction in directions:
             for distance in range(1, 8):

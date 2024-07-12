@@ -28,15 +28,11 @@ class Piece:
         self.grid_height = self.settings.screen_heigth / 8
 
     def draw_piece(self):
-
-        # get the coordinates of the position, instead of the grid index
         pos = [self.pos[0] * self.grid_height, self.pos[1] * self.grid_width]
                 
-        # center piece
         x = pos[1] + (self.grid_height - self.img.get_height()) // 2
         y = pos[0] + (self.grid_width - self.img.get_width()) // 2
 
-        #draw piece
         self.screen.blit(self.img, (x, y))
 
     def draw_select(self):

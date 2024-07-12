@@ -1,8 +1,6 @@
 from piece import Piece
 from rook import Rook
 from bishop import Bishop
-import pygame
-
 
 class Queen(Piece):
     def __init__(self, team, pos, game):
