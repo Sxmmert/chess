@@ -81,9 +81,15 @@ class Chess:
     def main(self):
         while(True):
             self.check_events()
+            self.main_events()
             self.update_screen()
         
-    
+
+    def main_events(self):
+        self.is_king_in_check()
+        for piece in filter(lambda piece: piece != 0, self.piece_locations):
+            piece.get_available_moves()
+
     def check_events(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -100,7 +106,6 @@ class Chess:
             
             if(mouse_pos[0] < self.settings.screen_width and mouse_pos[1] < self.settings.screen_heigth):
                 self.check_chess_board(mouse_pos)
-                self.is_king_in_check()
             else:
                 self.check_side_board(mouse_pos)
 

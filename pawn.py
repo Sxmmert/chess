@@ -19,6 +19,7 @@ class Pawn(Piece):
                 else:
                     self.game.piece_locations[self.idx - 8] = 0
                 self.game.en_passant_move = None
+                self.game.taken_pieces.append(self)
 
 
     def get_available_moves(self, en_passant_enabled = True):
