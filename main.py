@@ -1,6 +1,5 @@
 import pygame
 import sys
-
 from settings import Settings
 from piece import Piece
 from pawn import Pawn
@@ -31,7 +30,8 @@ class Chess:
         self.taken_pieces = []
         self.playing = True
         self.winner = None
-        
+        self.legal_moves_black = []
+        self.legal_moves_white = []
         self.piece_locations = [0] * 64
         self.initialize_pieces()
 
@@ -86,9 +86,90 @@ class Chess:
         
 
     def main_events(self):
-        self.is_king_in_check()
+        self.get_king_pos()
+        self.king_black.in_check = self.is_king_in_check(self.king_white.team, self.piece_locations)
+        self.king_white.in_check = self.is_king_in_check(self.king_black.team, self.piece_locations)
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
-            piece.get_available_moves()
+            piece.change_available_moves(piece.get_available_moves(self.piece_locations))
+            piece.make_rect()
+        self.simulate_move()
+
+    def get_king_pos(self):
+        for piece in filter(lambda piece: piece != 0, self.piece_locations):
+            if piece.name == "king":
+                if piece.team == "white":
+                    self.king_white = piece
+                else:
+                    self.king_black = piece
+
+    def is_king_in_check(self, team, piece_locations, piece=None):
+        if team == "white":
+            for move in self.get_all_moves("black", piece_locations):
+                if piece != None:
+                    print(f"{piece}")
+                if move == self.king_white.pos:
+                    return True
+        else:
+            for move in self.get_all_moves("white", piece_locations):
+                if move == self.king_black.pos:
+                    return True
+            
+        return False
+                
+    def get_all_moves(self, team, piece_locations):
+        moves = []
+        for piece in filter(lambda piece: piece != 0 and piece.team == team, piece_locations):
+            available_moves = piece.get_available_moves(piece_locations)
+            moves.extend(available_moves)
+
+        return moves
+
+    
+    def is_legal_move(self, piece_locations, team, piece):
+        all_black_moves = self.get_all_moves("black", piece_locations)
+        all_white_moves = self.get_all_moves("white", piece_locations)
+        if team == "black":
+            if self.king_black.pos in all_white_moves:
+                return False
+        else:
+            if self.king_white.pos in all_black_moves:
+                return False
+        return True
+
+    def simulate_move(self):
+        piece_locations = self.piece_locations[:]
+        legal_moves_white = []
+        legal_moves_black = []
+
+        for piece in filter(lambda piece: piece != 0, piece_locations):
+            old_pos = piece.pos
+            old_idx = piece.idx
+            old_available_moves = piece.available_moves
+
+            for move in piece.get_available_moves(piece_locations):
+                piece.pos = move
+                piece.idx = piece.pos_to_idx(move)
+                piece_locations[old_idx] = 0
+                piece_locations[piece.idx] = piece
+
+                available_moves = piece.get_available_moves(piece_locations)
+                piece.change_available_moves(available_moves)
+
+                if self.is_legal_move(piece_locations, piece.team, piece):
+                    if piece.team == "white":
+                        legal_moves_white.append((piece, move))
+                    else:
+                        legal_moves_black.append((piece, move))
+
+                piece_locations[old_idx] = piece
+                piece_locations[piece.idx] = 0
+                piece.available_moves = old_available_moves
+
+            piece.pos = old_pos
+            piece.idx = old_idx
+
+        self.legal_moves_black = legal_moves_black
+        self.legal_moves_white = legal_moves_white
 
     def check_events(self):
         for event in pygame.event.get():
@@ -98,12 +179,13 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                print(self.en_passant_move)
+                self.simulate_move()
+                for move in self.legal_moves_white:
+                    print(move)
 
     def check_event_mousedown(self, event):
         if event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
-            
             if(mouse_pos[0] < self.settings.screen_width and mouse_pos[1] < self.settings.screen_heigth):
                 self.check_chess_board(mouse_pos)
             else:
@@ -116,8 +198,10 @@ class Chess:
         collide_available_move = False
         clicked_idx = (mouse_pos[1] // width) * 8 + (mouse_pos[0] // height)
         self.last_selected.select = False
+
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
-            piece.get_available_moves()
+            piece.get_available_moves(self.piece_locations)
+            piece.make_rect()
             selected_piece_rect = pygame.Rect(piece.pos[1] * width, piece.pos[0] * height, width, height)
 
             if piece == self.last_selected or selected_piece_rect in self.last_selected.available_moves_rect:
@@ -147,32 +231,6 @@ class Chess:
 
     def get_turn(self):
         return "white" if self.turn == 1 else "black"
-    
-    def is_king_in_check(self):
-        white_moves = []
-        black_moves = []
-        self.king_white.in_check = False
-        self.king_black.in_check = False
-
-        for piece in filter(lambda piece: piece != 0, self.piece_locations):
-            if piece.name == "king":
-                if piece.team == "white":
-                    self.king_white = piece
-                else:
-                    self.king_black = piece
-
-            if piece.team == "white":
-                white_moves.extend(piece.available_moves)
-            else:
-                black_moves.extend(piece.available_moves)
-
-        for move in white_moves:
-            if move == self.king_black.pos:
-                self.king_white.in_check = True
-            
-        for move in black_moves:
-            if move == self.king_white.pos:
-                self.king_black.in_check = True
 
     def collide_grid_select(self, piece):
         if self.get_turn() != piece.team: return
@@ -180,7 +238,6 @@ class Chess:
         self.select = True
         piece.select = True
         self.last_selected = piece
-
 
     def update_screen(self):
         pygame.display.flip()
@@ -212,6 +269,7 @@ class Chess:
                 piece.draw_available_moves()
             
             piece.draw_piece()
+
             if piece.name != "king": continue
             if piece.in_check:
                 if self.counter < (self.settings.counter / 2):
@@ -249,6 +307,7 @@ class Chess:
         pygame.draw.rect(self.screen, self.settings.right_border_color, right_border_rect)
         white = 0
         black = 0
+
         for piece in self.taken_pieces:
             if piece.team == "black":
                 self.screen.blit(piece.img_small, (self.settings.screen_width + 25, 5 + 50 * black))
@@ -256,7 +315,6 @@ class Chess:
             else:
                 self.screen.blit(piece.img_small, (self.settings.screen_width + 125, 5 + 50 * white))
                 white += 1
-
 
 if __name__ == '__main__':
     chess = Chess()

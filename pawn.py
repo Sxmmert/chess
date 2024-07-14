@@ -22,8 +22,7 @@ class Pawn(Piece):
                 self.game.taken_pieces.append(self)
 
 
-    def get_available_moves(self, en_passant_enabled = True):
-        piece_locations = self.game.piece_locations
+    def get_available_moves(self, piece_locations, en_passant_enabled = True):
         self.available_moves_rect = []
         piece_location = int(self.pos[0] * 8 + self.pos[1])
         piece_step = -8 if self.team == "white" else 8
@@ -69,5 +68,5 @@ class Pawn(Piece):
 
             self.game.en_passant_move = en_passant_move if self.en_passant else None
 
-        self.available_moves = available_moves
+        return available_moves
         self.make_rect()

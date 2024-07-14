@@ -8,18 +8,8 @@ class Queen(Piece):
 
     def __repr__(self):
         return f"{self.team} queen at ({self.pos})"
-    
-    def get_available_moves(self):
-        rook_moves = Rook.available_moves(self)
-        bishop_moves = Bishop.available_moves(self)
 
-        available_moves = rook_moves + bishop_moves
-
-        self.available_moves = available_moves
-        self.make_rect()
-
-    def get_available_moves(self):
-        piece_locations = self.game.piece_locations
+    def get_available_moves(self, piece_locations):
         self.available_moves_rect = []
         available_moves = []
 
@@ -57,5 +47,5 @@ class Queen(Piece):
                 else:
                     break
 
-        self.available_moves = available_moves
+        return available_moves
         self.make_rect()

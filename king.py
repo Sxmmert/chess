@@ -9,8 +9,7 @@ class King(Piece):
     def __repr__(self):
         return f"{self.team} king at ({self.pos})"
     
-    def get_available_moves(self):
-        piece_locations = self.game.piece_locations
+    def get_available_moves(self, piece_locations):
         self.available_moves_rect = []
         available_moves = []
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
@@ -25,8 +24,7 @@ class King(Piece):
                 elif piece_locations[idx].team != self.team:
                     available_moves.append([row, col])
 
-        self.available_moves = available_moves
-        self.make_rect()
+        return available_moves
     
     def draw_check(self):
         cell_width = self.settings.screen_width / 8

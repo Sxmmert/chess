@@ -7,8 +7,7 @@ class Bishop(Piece):
     def __repr__(self):
         return f"{self.team} bishop at ({self.pos})"
     
-    def get_available_moves(self):
-        piece_locations = self.game.piece_locations
+    def get_available_moves(self, piece_locations):
         self.available_moves_rect = []
         available_moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
@@ -29,5 +28,4 @@ class Bishop(Piece):
                 else:
                     break
 
-        self.available_moves = available_moves
-        self.make_rect()
+        return available_moves

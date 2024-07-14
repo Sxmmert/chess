@@ -23,6 +23,8 @@ class Piece:
         self.idx = int(pos[0] * 8 + pos[1])
         self.available_moves_rect = []
         self.available_moves = []
+        self.legal_moves = []
+        self.make_legal_move = []
 
         self.grid_width = self.settings.screen_width / 8
         self.grid_height = self.settings.screen_heigth / 8
@@ -43,8 +45,9 @@ class Piece:
         pygame.draw.circle(self.screen, self.settings.select_bg_color, (center_x, center_y), dark_circle_radius)
 
     def draw_available_moves(self):
-        if self.available_moves == None: return
-        for i in self.available_moves:
+        if self.legal_moves == None: return
+        for i in self.legal_moves:
+            if i not in self.make_legal_move: continue
             pos = [i[0] * self.grid_height, i[1] * self.grid_width]
             dark_circle_radius = min(self.grid_width, self.grid_height) // 3
             center_x = pos[1] + self.grid_width // 2
@@ -56,14 +59,40 @@ class Piece:
         col = index % 8
         return [row, col]
     
+    def pos_to_idx(self, pos):
+        row, col = pos
+        return row * 8 + col
+    
     def get_available_moves(self):
         return [[-1, -1]]
     
+    def change_available_moves(self, available_moves):
+        self.available_moves = available_moves
+    
+    
     def make_rect(self):
+        self.make_legal_move = []
         width = self.game.settings.screen_width / 8
         height = self.game.settings.screen_heigth / 8
+        turn = self.game.get_turn()
         for move in self.available_moves:
-            self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
+            if turn == "white":
+                for legal_move in self.game.legal_moves_white:
+                    piece = legal_move[0]
+                    move = legal_move[1]
+                    if piece == self:
+                        self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
+                        self.legal_moves.append(move)
+                        self.make_legal_move.append(move)
+
+            else:
+                for legal_move in self.game.legal_moves_black:
+                    piece = legal_move[0]
+                    move = legal_move[1]
+                    if piece == self:
+                        self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
+                        self.legal_moves.append(move)
+                        self.make_legal_move.append(move)
     
     def move(self, clicked_idx):
         self.game.last_move_from = self.pos
