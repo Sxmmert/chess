@@ -8,7 +8,6 @@ class Knight(Piece):
         return f"{self.team} knight at ({self.pos})"
     
     def get_available_moves(self, piece_locations):
-        self.available_moves_rect = []
         available_moves = []
         moves = [
             (-2, -1), (-2, 1), (2, -1), (2, 1),

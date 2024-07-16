@@ -30,8 +30,6 @@ class Chess:
         self.taken_pieces = []
         self.playing = True
         self.winner = None
-        self.legal_moves_black = []
-        self.legal_moves_white = []
         self.piece_locations = [0] * 64
         self.initialize_pieces()
 
@@ -81,18 +79,14 @@ class Chess:
     def main(self):
         while(True):
             self.check_events()
-            self.main_events()
+            self.check_king()
+            self.simulate_move()
             self.update_screen()
-        
-
-    def main_events(self):
+            
+    def check_king(self):
         self.get_king_pos()
         self.king_black.in_check = self.is_king_in_check(self.king_white.team, self.piece_locations)
         self.king_white.in_check = self.is_king_in_check(self.king_black.team, self.piece_locations)
-        for piece in filter(lambda piece: piece != 0, self.piece_locations):
-            piece.change_available_moves(piece.get_available_moves(self.piece_locations))
-            piece.make_rect()
-        self.simulate_move()
 
     def get_king_pos(self):
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
@@ -105,8 +99,6 @@ class Chess:
     def is_king_in_check(self, team, piece_locations, piece=None):
         if team == "white":
             for move in self.get_all_moves("black", piece_locations):
-                if piece != None:
-                    print(f"{piece}")
                 if move == self.king_white.pos:
                     return True
         else:
@@ -123,11 +115,11 @@ class Chess:
             moves.extend(available_moves)
 
         return moves
-
-    
+   
     def is_legal_move(self, piece_locations, team, piece):
         all_black_moves = self.get_all_moves("black", piece_locations)
         all_white_moves = self.get_all_moves("white", piece_locations)
+
         if team == "black":
             if self.king_black.pos in all_white_moves:
                 return False
@@ -137,39 +129,28 @@ class Chess:
         return True
 
     def simulate_move(self):
-        piece_locations = self.piece_locations[:]
-        legal_moves_white = []
-        legal_moves_black = []
-
-        for piece in filter(lambda piece: piece != 0, piece_locations):
+        for piece in filter(lambda piece: piece != 0, self.piece_locations):
+            piece_locations = self.piece_locations[:]
             old_pos = piece.pos
             old_idx = piece.idx
-            old_available_moves = piece.available_moves
+            piece_moves = []
 
             for move in piece.get_available_moves(piece_locations):
                 piece.pos = move
-                piece.idx = piece.pos_to_idx(move)
+                new_idx = piece.pos_to_idx(move)
+                piece.idx = new_idx
                 piece_locations[old_idx] = 0
                 piece_locations[piece.idx] = piece
-
-                available_moves = piece.get_available_moves(piece_locations)
-                piece.change_available_moves(available_moves)
-
+                piece_locations[piece.idx].change_available_moves(piece_locations[piece.idx].get_available_moves(piece_locations))
                 if self.is_legal_move(piece_locations, piece.team, piece):
-                    if piece.team == "white":
-                        legal_moves_white.append((piece, move))
-                    else:
-                        legal_moves_black.append((piece, move))
-
-                piece_locations[old_idx] = piece
-                piece_locations[piece.idx] = 0
-                piece.available_moves = old_available_moves
+                    piece_moves.append(move)
+                piece_locations = self.piece_locations[:]
 
             piece.pos = old_pos
             piece.idx = old_idx
-
-        self.legal_moves_black = legal_moves_black
-        self.legal_moves_white = legal_moves_white
+            piece.change_available_moves(piece_moves)
+            piece.make_rect()
+            piece_locations = self.piece_locations
 
     def check_events(self):
         for event in pygame.event.get():
@@ -179,9 +160,9 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                self.simulate_move()
-                for move in self.legal_moves_white:
-                    print(move)
+                for piece in filter(lambda piece: piece != 0, self.piece_locations):
+                    print(piece)
+                    print(piece.available_moves)
 
     def check_event_mousedown(self, event):
         if event.button == 1:
@@ -200,8 +181,6 @@ class Chess:
         self.last_selected.select = False
 
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
-            piece.get_available_moves(self.piece_locations)
-            piece.make_rect()
             selected_piece_rect = pygame.Rect(piece.pos[1] * width, piece.pos[0] * height, width, height)
 
             if piece == self.last_selected or selected_piece_rect in self.last_selected.available_moves_rect:

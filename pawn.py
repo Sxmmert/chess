@@ -23,7 +23,6 @@ class Pawn(Piece):
 
 
     def get_available_moves(self, piece_locations, en_passant_enabled = True):
-        self.available_moves_rect = []
         piece_location = int(self.pos[0] * 8 + self.pos[1])
         piece_step = -8 if self.team == "white" else 8
         self.en_passant = False

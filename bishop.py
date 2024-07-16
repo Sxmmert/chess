@@ -8,7 +8,6 @@ class Bishop(Piece):
         return f"{self.team} bishop at ({self.pos})"
     
     def get_available_moves(self, piece_locations):
-        self.available_moves_rect = []
         available_moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
 

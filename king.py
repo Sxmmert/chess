@@ -10,7 +10,6 @@ class King(Piece):
         return f"{self.team} king at ({self.pos})"
     
     def get_available_moves(self, piece_locations):
-        self.available_moves_rect = []
         available_moves = []
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)]
 

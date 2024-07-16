@@ -10,7 +10,6 @@ class Queen(Piece):
         return f"{self.team} queen at ({self.pos})"
 
     def get_available_moves(self, piece_locations):
-        self.available_moves_rect = []
         available_moves = []
 
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
@@ -48,4 +47,3 @@ class Queen(Piece):
                     break
 
         return available_moves
-        self.make_rect()
