@@ -22,6 +22,11 @@ class Settings:
         self.select_bg_color = (50, 50, 50)
         self.available_move_bg_color = (100, 100, 100)
 
+        self.winner_bg_color = (0, 0, 0)
+        self.winner_scale = 1.5
+        self.winner_font = pygame.font.Font('freesansbold.ttf', 36)
+        self.winner_text_color = (255, 255, 255)
+
         self.counter = 30
         self.checking_color = "dark red"
         self.checking_thickness = 5

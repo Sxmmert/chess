@@ -31,6 +31,8 @@ class Chess:
         self.playing = True
         self.winner = None
         self.piece_locations = [0] * 64
+        self.legal_moves_white = []
+        self.legal_moves_black = []
         self.initialize_pieces()
 
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
@@ -81,6 +83,7 @@ class Chess:
             self.check_events()
             self.check_king()
             self.simulate_move()
+            self.check_winner()
             self.update_screen()
             
     def check_king(self):
@@ -129,6 +132,8 @@ class Chess:
         return True
 
     def simulate_move(self):
+        self.legal_moves_black = []
+        self.legal_moves_white = []
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
             piece_locations = self.piece_locations[:]
             old_pos = piece.pos
@@ -149,8 +154,20 @@ class Chess:
             piece.pos = old_pos
             piece.idx = old_idx
             piece.change_available_moves(piece_moves)
+            if piece_moves != []:
+                if piece.team == "white":
+                    self.legal_moves_white.append(piece_moves)
+                else:
+                    self.legal_moves_black.append(piece_moves)
             piece.make_rect()
             piece_locations = self.piece_locations
+
+    def check_winner(self):
+        if self.legal_moves_black == []:
+            self.winner = "white"
+        if self.legal_moves_white == []:
+            self.winner = "black"
+        print(self.winner)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -160,9 +177,7 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                for piece in filter(lambda piece: piece != 0, self.piece_locations):
-                    print(piece)
-                    print(piece.available_moves)
+                print(self.legal_moves_white)
 
     def check_event_mousedown(self, event):
         if event.button == 1:
@@ -224,6 +239,7 @@ class Chess:
         self.draw_bg()
         self.draw_pieces()
         self.draw_side_screen()
+        self.draw_winner()
 
         self.counter = self.counter + 1 if self.counter < self.settings.counter else 0
 
@@ -294,6 +310,24 @@ class Chess:
             else:
                 self.screen.blit(piece.img_small, (self.settings.screen_width + 125, 5 + 50 * white))
                 white += 1
+
+    def draw_winner(self):
+        if self.winner == None: return
+        height = self.settings.screen_heigth
+        width = self.settings.screen_width
+        rect_height = height // self.settings.winner_scale
+        rect_width = width // self.settings.winner_scale
+        rect_x = (width - rect_width) // self.settings.winner_scale
+        rect_y = (height - rect_height) // self.settings.winner_scale
+        winner_bg_color = self.settings.winner_bg_color
+        winner_rect = pygame.Rect(rect_x, rect_y, rect_width, rect_height)
+        pygame.draw.rect(self.screen, winner_bg_color, winner_rect)
+
+        text = "winner white" if self.winner == "white" else "winner black"
+        text_surface = self.settings.winner_font.render(text, True, self.settings.winner_text_color)
+        text_rect = text_surface.get_rect(center=(rect_x + rect_width // 2, rect_y + rect_height // 2))
+        self.screen.blit(text_surface, text_rect)
+
 
 if __name__ == '__main__':
     chess = Chess()
