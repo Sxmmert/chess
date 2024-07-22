@@ -27,6 +27,10 @@ class Settings:
         self.winner_font = pygame.font.Font('freesansbold.ttf', 36)
         self.winner_text_color = (255, 255, 255)
 
+        self.promotion_bg_color = (30, 30, 30)
+        self.promotion_cross_color = (255, 0, 0)
+        self.promotion_cross_thickness = 3
+
         self.counter = 30
         self.checking_color = "dark red"
         self.checking_thickness = 5

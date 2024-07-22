@@ -19,7 +19,6 @@ class Piece:
             self.img = pygame.image.load(self.path)
             self.img_small = pygame.transform.scale(self.img, (45, 45))
             self.img = pygame.transform.scale(self.img, (self.grid_width / 1.5, self.grid_height / 1.5))
-        self.select = False
         self.idx = int(pos[0] * 8 + pos[1])
         self.available_moves_rect = []
         self.available_moves = []
@@ -68,10 +67,16 @@ class Piece:
     
     def make_rect(self):
         self.available_moves_rect = []
-        width = self.game.settings.screen_width / 8
-        height = self.game.settings.screen_heigth / 8
+        # width = self.game.settings.screen_width / 8
+        # height = self.game.settings.screen_heigth / 8
         for move in self.available_moves:
-                self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
+                # self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
+                self.available_moves_rect.append(self.pos_to_rect(move))
+
+    def pos_to_rect(self, pos):
+        width = self.game.settings.screen_width // 8
+        height = self.game.settings.screen_heigth // 8
+        return pygame.Rect(pos[1] * width, pos[0] * height, width, height)
     
     def move(self, clicked_idx):
         self.game.last_move_from = self.pos

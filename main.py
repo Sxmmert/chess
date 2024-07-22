@@ -26,7 +26,10 @@ class Chess:
         self.en_passant_move = None
         self.king_white = None
         self.king_black = None
+        self.promotion = None
+        self.check = None
         self.select = False
+        self.piece_select = None
         self.taken_pieces = []
         self.playing = True
         self.winner = None
@@ -80,24 +83,33 @@ class Chess:
 
     def main(self):
         while(True):
+            self.check_pieces()
             self.check_events()
-            self.check_king()
             self.simulate_move()
             self.check_winner()
             self.update_screen()
             
-    def check_king(self):
-        self.get_king_pos()
+    def check_pieces(self):
+        self.get_pieces_pos()
         self.king_black.in_check = self.is_king_in_check(self.king_white.team, self.piece_locations)
         self.king_white.in_check = self.is_king_in_check(self.king_black.team, self.piece_locations)
 
-    def get_king_pos(self):
-        for piece in filter(lambda piece: piece != 0, self.piece_locations):
+    def get_pieces_pos(self):
+        for piece in filter(lambda piece: piece != 0 and piece.name in ["king", "pawn"], self.piece_locations):
             if piece.name == "king":
                 if piece.team == "white":
                     self.king_white = piece
                 else:
                     self.king_black = piece
+
+                if piece.in_check:
+                    if self.counter < (self.settings.counter / 2):
+                        self.check = piece
+            
+            if piece.name == "pawn":
+                if piece.pawn_promotion:
+                    self.promotion = piece
+
 
     def is_king_in_check(self, team, piece_locations, piece=None):
         if team == "white":
@@ -167,7 +179,6 @@ class Chess:
             self.winner = "white"
         if self.legal_moves_white == []:
             self.winner = "black"
-        print(self.winner)
 
     def check_events(self):
         for event in pygame.event.get():
@@ -182,10 +193,14 @@ class Chess:
     def check_event_mousedown(self, event):
         if event.button == 1:
             mouse_pos = pygame.mouse.get_pos()
-            if(mouse_pos[0] < self.settings.screen_width and mouse_pos[1] < self.settings.screen_heigth):
-                self.check_chess_board(mouse_pos)
+            if not self.promotion:
+                if(mouse_pos[0] < self.settings.screen_width and mouse_pos[1] < self.settings.screen_heigth):
+                    self.check_chess_board(mouse_pos)
+                else:
+                    self.check_side_board(mouse_pos)
             else:
-                self.check_side_board(mouse_pos)
+                self.check_promotion(mouse_pos)
+
 
     def check_chess_board(self, mouse_pos):
         width = self.settings.screen_width / 8
@@ -202,6 +217,7 @@ class Chess:
                 for rect in self.last_selected.available_moves_rect:
                     if rect.collidepoint(mouse_pos):
                         self.last_selected.move(int(clicked_idx))
+                        self.piece_select = None
                         self.select = False
                         select = True
                         collide_available_move = True
@@ -215,6 +231,7 @@ class Chess:
         if not select:
                 self.last_selected = Piece("Default", "Default", (-1, -1), self)
                 self.select = False
+                self.piece_select = None
         
     def check_side_board(self, mouse_pos):
         under_right_border_rect = pygame.Rect(self.settings.screen_width, self.settings.screen_heigth,
@@ -223,6 +240,24 @@ class Chess:
             print("FORFEIT")
             pass
 
+    def check_promotion(self, mouse_pos):
+        promotion_rects = self.promotion.get_promotion_rect()
+        for piece in promotion_rects:
+            if piece == "cross" and promotion_rects["cross"].collidepoint(mouse_pos):
+                self.promotion = None
+                self.piece_locations[self.taken_pieces[-1].idx] = self.taken_pieces[-1]
+                self.last_moved.pawn_promotion = False
+                self.last_moved.pos = self.last_move_from
+                idx = Piece.pos_to_idx(self, self.last_move_from)
+                self.last_moved.idx = idx
+                self.piece_locations[idx] = self.last_moved
+                self.turn *= -1
+                self.taken_pieces.pop()
+                break
+            if promotion_rects[piece].collidepoint(mouse_pos):
+                self.piece_locations[self.promotion.idx] = piece
+                self.promotion = None
+
     def get_turn(self):
         return "white" if self.turn == 1 else "black"
 
@@ -230,7 +265,7 @@ class Chess:
         if self.get_turn() != piece.team: return
 
         self.select = True
-        piece.select = True
+        self.piece_select = piece
         self.last_selected = piece
 
     def update_screen(self):
@@ -246,8 +281,8 @@ class Chess:
     def draw_bg(self):
         W_COLOR = self.settings.white_bg_color
         B_COLOR = self.settings.black_bg_color
-        width = self.settings.screen_heigth / 8
-        height = self.settings.screen_width / 8
+        width = self.settings.screen_heigth // 8
+        height = self.settings.screen_width // 8
         self.screen.fill(self.settings.bg_color)
 
         for row in range(8):
@@ -256,19 +291,21 @@ class Chess:
                 pygame.draw.rect(self.screen, color, (col * width, row * height, width, height))
 
     def draw_pieces(self):
+        if self.piece_select:
+            self.piece_select.draw_select()
+            self.piece_select.draw_available_moves()
+
         for piece in self.piece_locations:
             if piece == 0 or piece == None: continue
-            
-            if piece.select:
-                piece.draw_select()
-                piece.draw_available_moves()
-            
             piece.draw_piece()
+        
+        if self.check:
+            self.piece_locations[self.king_black.idx if self.check.team == "white" else self.king_white.idx].draw_check()
+            self.check = None
 
-            if piece.name != "king": continue
-            if piece.in_check:
-                if self.counter < (self.settings.counter / 2):
-                    self.piece_locations[self.king_black.idx if piece.team == "white" else self.king_white.idx].draw_check()
+        if self.promotion:
+            self.promotion.draw_promotion()
+            self.promotion = None
         
     def draw_side_screen(self):
         self.draw_forfeit()
