@@ -1,5 +1,6 @@
 import pygame
 from settings import Settings
+from pygame import mixer
 
 class Piece:
     def __init__(self, name, team, pos, game):
@@ -84,6 +85,7 @@ class Piece:
         self.game.last_move_to = self.pos
         if self.game.piece_locations[clicked_idx] != 0:
             self.game.taken_pieces.append(self.game.piece_locations[clicked_idx])
+            self.settings.capture_sound.play()
         self.game.piece_locations[self.idx] = 0
         self.idx = clicked_idx
         self.game.piece_locations[clicked_idx] = self
@@ -91,3 +93,5 @@ class Piece:
         self.available_moves_rect = []
         self.game.turn *= -1
         self.game.last_selected = Piece("Default", "Default", (-1, -1), self)
+
+        self.settings.move_sound.play()

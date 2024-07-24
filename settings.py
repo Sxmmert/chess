@@ -1,7 +1,18 @@
 import pygame
+from pygame import mixer
 
 class Settings:
     def __init__(self):
+        pygame.init()
+        mixer.init()
+        self.capture_sound = mixer.Sound("sound/capture.mp3")
+        self.castle_sound = mixer.Sound("sound/castle.mp3")
+        self.check_sound = mixer.Sound("sound/check.mp3")
+        self.end_sound = mixer.Sound("sound/end.mp3")
+        self.move_sound = mixer.Sound("sound/move.mp3")
+        self.promote_sound = mixer.Sound("sound/promote.mp3")
+        self.start_sound = mixer.Sound("sound/start.mp3")
+        self.tenseconds_sound = mixer.Sound("sound/tenseconds.mp3")
         self.screen_width = 600
         self.screen_heigth = 600
         self.screen_width_side_screen = 200

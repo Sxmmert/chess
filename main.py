@@ -23,8 +23,8 @@ class Chess:
         self.last_moved = None
         self.last_move_from = None
         self.last_move_to = None
-        self.black_moves = None
-        self.white_moves = None
+        self.black_moves = []
+        self.white_moves = []
         self.king_white = None
         self.king_black = None
         self.promotion = None
@@ -38,6 +38,7 @@ class Chess:
         self.legal_moves_white = []
         self.legal_moves_black = []
         self.initialize_pieces()
+        self.settings.start_sound.play()
 
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
             if piece.name == "king":
@@ -92,10 +93,8 @@ class Chess:
             
     def check_pieces(self):
         self.get_pieces_pos()
-        self.white_moves = self.get_all_moves("white", self.piece_locations)
-        self.black_moves = self.get_all_moves("black", self.piece_locations)
-        self.king_black.in_check = self.is_king_in_check(self.king_white.team, self.piece_locations)
-        self.king_white.in_check = self.is_king_in_check(self.king_black.team, self.piece_locations)
+        self.king_black.in_check = self.is_king_in_check(self.king_white.team)
+        self.king_white.in_check = self.is_king_in_check(self.king_black.team)
 
     def get_pieces_pos(self):
         for piece in filter(lambda piece: piece != 0 and piece.name in ["king", "pawn"], self.piece_locations):
@@ -114,7 +113,7 @@ class Chess:
                     self.promotion = piece
 
 
-    def is_king_in_check(self, team, piece_locations, piece=None):
+    def is_king_in_check(self, team,):
         if team == "white":
             for move in self.black_moves:
                 if move == self.king_white.pos:
@@ -180,6 +179,8 @@ class Chess:
     def check_winner(self):
         if self.legal_moves_black == []:
             self.winner = "white"
+            self.settings.check_sound.play()
+            self.settings.end_sound.play()
         if self.legal_moves_white == []:
             self.winner = "black"
 
@@ -260,6 +261,7 @@ class Chess:
             if promotion_rects[piece].collidepoint(mouse_pos):
                 self.piece_locations[self.promotion.idx] = piece
                 self.promotion = None
+                self.settings.promote_sound.play()
 
     def get_turn(self):
         return "white" if self.turn == 1 else "black"

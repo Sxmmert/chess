@@ -90,6 +90,8 @@ class King(Piece):
                 else:
                     self.update_rook_position(7, 5, [0, 5])
 
+                self.settings.castle_sound.play()
+
         if self.castle_queenside_pos != None:
             castle_queenside_idx = Piece.pos_to_idx(self, self.castle_queenside_pos)
             if clicked_idx == castle_queenside_idx:
@@ -98,9 +100,16 @@ class King(Piece):
                 else:
                     self.update_rook_position(0, 3, [0, 3])
 
+                self.settings.castle_sound.play()
+
         self.first_move = False
         self.castle_queenside_pos = None
         self.castle_kingside_pos = None
+
+        self.game.white_moves = self.game.get_all_moves("white", self.game.piece_locations)
+        self.game.black_moves = self.game.get_all_moves("black", self.game.piece_locations)
+        if self.game.is_king_in_check("white") or self.game.is_king_in_check("black"):
+            self.settings.check_sound.play()
 
     def update_rook_position(self, rook_start_idx, rook_end_idx, rook_end_pos):
         self.game.piece_locations[rook_end_idx] = self.game.piece_locations[rook_start_idx]

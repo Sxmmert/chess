@@ -28,3 +28,10 @@ class Bishop(Piece):
                     break
 
         return available_moves
+    
+    def move(self, clicked_idx):
+        super().move(clicked_idx)
+        self.game.white_moves = self.game.get_all_moves("white", self.game.piece_locations)
+        self.game.black_moves = self.game.get_all_moves("black", self.game.piece_locations)
+        if self.game.is_king_in_check("white") or self.game.is_king_in_check("black"):
+            self.settings.check_sound.play()

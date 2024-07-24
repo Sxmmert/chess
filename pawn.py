@@ -29,9 +29,15 @@ class Pawn(Piece):
 
                 self.game.en_passant_move = None
                 self.game.taken_pieces.append(taken_piece)
+                self.settings.capture_sound.play()
 
         if self.pos[0] == 0 or self.pos[0] == 7:
             self.pawn_promotion = True
+
+        self.game.white_moves = self.game.get_all_moves("white", self.game.piece_locations)
+        self.game.black_moves = self.game.get_all_moves("black", self.game.piece_locations)
+        if self.game.is_king_in_check("white") or self.game.is_king_in_check("black"):
+            self.settings.check_sound.play()
 
     def get_available_moves(self, piece_locations, en_passant_enabled = True):
         piece_location = int(self.pos[0] * 8 + self.pos[1])
