@@ -9,7 +9,7 @@ class Pawn(Piece):
     def __init__(self, team, pos, game):
         super().__init__("pawn", team, pos, game)
         self.first_move = True
-        self.en_passant = False
+        self.en_passant_move = None
         self.pawn_promotion = False
 
     def __repr__(self):
@@ -18,25 +18,27 @@ class Pawn(Piece):
     def move(self, clicked_idx):
         super().move(clicked_idx)
         self.first_move = False
-        if self.game.en_passant_move is not None:
-            if self.pos == self.game.en_passant_move:
+        if self.en_passant_move is not None:
+            if self.pos == self.en_passant_move:
                 if self.team == "white":
+                    taken_piece = self.game.piece_locations[self.idx + 8] 
                     self.game.piece_locations[self.idx + 8] = 0
                 else:
+                    taken_piece = self.game.piece_locations[self.idx - 8]
                     self.game.piece_locations[self.idx - 8] = 0
+
                 self.game.en_passant_move = None
-                self.game.taken_pieces.append(self)
+                self.game.taken_pieces.append(taken_piece)
 
         if self.pos[0] == 0 or self.pos[0] == 7:
             self.pawn_promotion = True
 
-
     def get_available_moves(self, piece_locations, en_passant_enabled = True):
         piece_location = int(self.pos[0] * 8 + self.pos[1])
         piece_step = -8 if self.team == "white" else 8
-        self.en_passant = False
         en_passant_move = []
         available_moves = []
+        en_passant = False
 
         if 0 <= piece_location + piece_step < 64 and piece_locations[int(piece_location + piece_step)] == 0:
             available_moves.append([(piece_location + piece_step) // 8, (piece_location + piece_step) % 8])
@@ -63,7 +65,7 @@ class Pawn(Piece):
                     else:
                         en_passant_move = [self.pos[0] + 1, self.pos[1] - 1]
                         available_moves.append(en_passant_move)
-                    self.en_passant = True
+                    en_passant = True
                     
                 if(self.pos[1] + 1 == self.game.last_move_to[1]):
                     if(self.team == "white"):
@@ -72,9 +74,9 @@ class Pawn(Piece):
                     else:
                         en_passant_move = [self.pos[0] + 1, self.pos[1] + 1]
                         available_moves.append(en_passant_move)
-                    self.en_passant = True
+                    en_passant = True
 
-            self.game.en_passant_move = en_passant_move if self.en_passant else None
+            self.en_passant_move = en_passant_move if en_passant else None
 
         return available_moves
 

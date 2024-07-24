@@ -3,6 +3,7 @@ from piece import Piece
 class Rook(Piece):
     def __init__(self, team, pos, game):
         super().__init__("rook", team, pos, game)
+        self.first_move = True
 
     def __repr__(self):
         return f"{self.team} rook at ({self.pos})"
@@ -28,3 +29,7 @@ class Rook(Piece):
                     break
 
         return available_moves
+    
+    def move(self, clicked_idx):
+        super().move(clicked_idx)
+        self.first_move = False

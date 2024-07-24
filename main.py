@@ -23,7 +23,8 @@ class Chess:
         self.last_moved = None
         self.last_move_from = None
         self.last_move_to = None
-        self.en_passant_move = None
+        self.black_moves = None
+        self.white_moves = None
         self.king_white = None
         self.king_black = None
         self.promotion = None
@@ -91,6 +92,8 @@ class Chess:
             
     def check_pieces(self):
         self.get_pieces_pos()
+        self.white_moves = self.get_all_moves("white", self.piece_locations)
+        self.black_moves = self.get_all_moves("black", self.piece_locations)
         self.king_black.in_check = self.is_king_in_check(self.king_white.team, self.piece_locations)
         self.king_white.in_check = self.is_king_in_check(self.king_black.team, self.piece_locations)
 
@@ -113,11 +116,11 @@ class Chess:
 
     def is_king_in_check(self, team, piece_locations, piece=None):
         if team == "white":
-            for move in self.get_all_moves("black", piece_locations):
+            for move in self.black_moves:
                 if move == self.king_white.pos:
                     return True
         else:
-            for move in self.get_all_moves("white", piece_locations):
+            for move in self.white_moves:
                 if move == self.king_black.pos:
                     return True
             
@@ -131,7 +134,7 @@ class Chess:
 
         return moves
    
-    def is_legal_move(self, piece_locations, team, piece):
+    def is_legal_move(self, piece_locations, team):
         all_black_moves = self.get_all_moves("black", piece_locations)
         all_white_moves = self.get_all_moves("white", piece_locations)
 
@@ -159,9 +162,9 @@ class Chess:
                 piece_locations[old_idx] = 0
                 piece_locations[piece.idx] = piece
                 piece_locations[piece.idx].change_available_moves(piece_locations[piece.idx].get_available_moves(piece_locations))
-                if self.is_legal_move(piece_locations, piece.team, piece):
+                if self.is_legal_move(piece_locations, piece.team):
                     piece_moves.append(move)
-                piece_locations = self.piece_locations[:]
+                piece_locations = self.piece_locations[:] 
 
             piece.pos = old_pos
             piece.idx = old_idx
