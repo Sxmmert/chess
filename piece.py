@@ -1,6 +1,5 @@
 import pygame
 from settings import Settings
-from pygame import mixer
 
 class Piece:
     def __init__(self, name, team, pos, game):
@@ -23,6 +22,7 @@ class Piece:
         self.idx = int(pos[0] * 8 + pos[1])
         self.available_moves_rect = []
         self.available_moves = []
+        self.piece_taken = False
 
         self.grid_width = self.settings.screen_width / 8
         self.grid_height = self.settings.screen_heigth / 8
@@ -80,11 +80,13 @@ class Piece:
         return pygame.Rect(pos[1] * width, pos[0] * height, width, height)
     
     def move(self, clicked_idx):
+        self.piece_taken = False
         self.game.last_move_from = self.pos
         self.pos = self.index_to_pos(clicked_idx)
         self.game.last_move_to = self.pos
         if self.game.piece_locations[clicked_idx] != 0:
             self.game.taken_pieces.append(self.game.piece_locations[clicked_idx])
+            self.piece_taken = True
             self.settings.capture_sound.play()
         self.game.piece_locations[self.idx] = 0
         self.idx = clicked_idx

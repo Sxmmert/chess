@@ -192,7 +192,7 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                print(self.legal_moves_white)
+                print(self.piece_locations)
 
     def check_event_mousedown(self, event):
         if event.button == 1:
@@ -246,20 +246,24 @@ class Chess:
 
     def check_promotion(self, mouse_pos):
         promotion_rects = self.promotion.get_promotion_rect()
-        for piece in promotion_rects:
-            if piece == "cross" and promotion_rects["cross"].collidepoint(mouse_pos):
-                self.promotion = None
-                self.piece_locations[self.taken_pieces[-1].idx] = self.taken_pieces[-1]
-                self.last_moved.pawn_promotion = False
-                self.last_moved.pos = self.last_move_from
-                idx = Piece.pos_to_idx(self, self.last_move_from)
-                self.last_moved.idx = idx
-                self.piece_locations[idx] = self.last_moved
+        for rect in promotion_rects:
+            if rect == "cross" and promotion_rects["cross"].collidepoint(mouse_pos):
                 self.turn *= -1
-                self.taken_pieces.pop()
+                self.promotion = None
+                self.last_moved.pos = self.last_move_from
+                self.last_moved.idx = Piece.pos_to_idx(self, self.last_move_from)
+                self.last_moved.pawn_promotion = False
+                self.piece_locations[self.last_moved.idx] = self.last_moved
+                self.piece_locations[Piece.pos_to_idx(self, self.last_move_to)] = 0 
+                if not self.last_moved.piece_taken:
+                    self.piece_locations[Piece.pos_to_idx(self, self.last_move_to)] = 0
+                else:
+                    self.piece_locations[Piece.pos_to_idx(self, self.last_move_to)] = self.taken_pieces[-1]
+                    self.taken_pieces.pop()
                 break
-            if promotion_rects[piece].collidepoint(mouse_pos):
-                self.piece_locations[self.promotion.idx] = piece
+
+            if promotion_rects[rect].collidepoint(mouse_pos):
+                self.piece_locations[self.promotion.idx] = rect
                 self.promotion = None
                 self.settings.promote_sound.play()
 
