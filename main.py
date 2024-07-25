@@ -1,5 +1,6 @@
 import pygame
 import sys
+import time
 from settings import Settings
 from piece import Piece
 from pawn import Pawn
@@ -39,6 +40,12 @@ class Chess:
         self.legal_moves_black = []
         self.initialize_pieces()
         self.settings.start_sound.play()
+        self.white_timer = self.settings.timer
+        self.black_timer = self.settings.timer
+        self.turn_start_time = time.time()
+        self.play_ending_sound_once = True
+        self.play_low_count_sound_white_once = True
+        self.play_low_count_sound_black_once = True
 
         for piece in filter(lambda piece: piece != 0, self.piece_locations):
             if piece.name == "king":
@@ -179,10 +186,41 @@ class Chess:
     def check_winner(self):
         if self.legal_moves_black == []:
             self.winner = "white"
-            self.settings.check_sound.play()
-            self.settings.end_sound.play()
+            if self.play_once_sound: self.settings.check_sound.play()
         if self.legal_moves_white == []:
+            if self.play_once_sound: self.settings.check_sound.play()
             self.winner = "black"
+
+        self.check_time()
+
+        if self.winner and self.play_ending_sound_once:
+            self.playing = False
+            self.play_ending_sound_once = False
+            self.settings.end_sound.play()
+
+    def check_time(self):
+        current_time = time.time()
+        elapsed_time = current_time - self.turn_start_time
+        self.turn_start_time = current_time
+        if self.turn == 1:
+            self.white_timer -= elapsed_time
+            if self.white_timer <= 0:
+                self.white_timer = 0
+                self.winner = "black"
+            
+            if self.white_timer <= 10 and self.play_low_count_sound_white_once:
+                self.play_low_count_sound_white_once = False
+                self.settings.tenseconds_sound.play()
+            
+        else:
+            self.black_timer -= elapsed_time
+            if self.black_timer <= 0:
+                self.black_timer = 0
+                self.winner = "white"
+
+            if self.black_timer <= 10 and self.play_low_count_sound_black_once:
+                self.play_low_count_sound_black_once = False
+                self.settings.tenseconds_sound.play()
 
     def check_events(self):
         for event in pygame.event.get():
@@ -192,7 +230,8 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                print(self.piece_locations)
+                print(self.black_timer)
+                print(self.white_timer)
 
     def check_event_mousedown(self, event):
         if event.button == 1:
@@ -248,7 +287,6 @@ class Chess:
         promotion_rects = self.promotion.get_promotion_rect()
         for rect in promotion_rects:
             if rect == "cross" and promotion_rects["cross"].collidepoint(mouse_pos):
-                self.turn *= -1
                 self.promotion = None
                 self.last_moved.pos = self.last_move_from
                 self.last_moved.idx = Piece.pos_to_idx(self, self.last_move_from)
@@ -263,6 +301,7 @@ class Chess:
                 break
 
             if promotion_rects[rect].collidepoint(mouse_pos):
+                self.turn *= -1
                 self.piece_locations[self.promotion.idx] = rect
                 self.promotion = None
                 self.settings.promote_sound.play()
@@ -320,12 +359,36 @@ class Chess:
         self.draw_forfeit()
         self.draw_piece_to_move()
         self.draw_taken_pieces()
+        self.draw_timer()
+
+    def draw_timer(self):
+        timer_border_rect = pygame.Rect(self.settings.screen_width // 5, self.settings.screen_heigth,
+                                        self.settings.screen_width - (self.settings.screen_width // 5 * 2), self.settings.screen_height_side_screen // 3.5)
+        pygame.draw.rect(self.screen, self.settings.timer_bg_color, timer_border_rect)
+
+        white_minutes, white_seconds = divmod(int(self.white_timer), 60)
+        black_minutes, black_seconds = divmod(int(self.black_timer), 60)
+        white_time_str = f"{white_minutes}:{white_seconds:02}"
+        black_time_str = f"{black_minutes}:{black_seconds:02}"
+
+        text_timer_black_surface = self.settings.timer_font.render(black_time_str, True, self.settings.timer_black_color)
+        text_timer_black_rect = text_timer_black_surface.get_rect()
+        text_timer_black_x = timer_border_rect.x + timer_border_rect.width - text_timer_black_rect.width - (text_timer_black_rect.width // 14.4)
+        text_timer_black_y = timer_border_rect.y + (text_timer_black_rect.height // 3)
+        self.screen.blit(text_timer_black_surface, (text_timer_black_x, text_timer_black_y))
+
+        text_timer_white_surface = self.settings.timer_font.render(white_time_str, True, self.settings.timer_white_color)
+        text_timer_white_rect = text_timer_white_surface.get_rect()
+        text_timer_white_x = timer_border_rect.x + (text_timer_white_rect.width // 14.4)
+        text_timer_white_y = timer_border_rect.y + (text_timer_white_rect.height // 3)
+        self.screen.blit(text_timer_white_surface, (text_timer_white_x, text_timer_white_y))
+
 
     def draw_forfeit(self):
         under_right_border_rect = pygame.Rect(self.settings.screen_width, self.settings.screen_heigth,
                             self.settings.screen_width_side_screen, self.settings.screen_height_side_screen)
         pygame.draw.rect(self.screen, self.settings.under_right_border_color, under_right_border_rect)
-        text_forfeit_surface = self.settings.forfeit_font.render("FORFEIT", True, "black")
+        text_forfeit_surface = self.settings.forfeit_font.render("FORFEIT", True, self.settings.forfeit_font_color)
         text_forfeit_rect = text_forfeit_surface.get_rect()
         text_forfeit_x = under_right_border_rect.x + (under_right_border_rect.width - text_forfeit_rect.width) / 2
         text_forfeit_y = under_right_border_rect.y + (under_right_border_rect.height - text_forfeit_rect.height) / 2
@@ -336,9 +399,9 @@ class Chess:
                             self.settings.screen_width, self.settings.screen_height_side_screen)
         pygame.draw.rect(self.screen, self.settings.under_border_color, under_border_rect)
         end_string_turn = "piece to move" if not self.select else "destination"
-        text_turn_surface = self.settings.turn_font.render(f"{self.get_turn().capitalize()}: Select a {end_string_turn}!", True, "black")
+        text_turn_surface = self.settings.turn_font.render(f"{self.get_turn().capitalize()}: Select a {end_string_turn}!", True, self.settings.turn_font_color)
         text_turn_rect = text_turn_surface.get_rect()
-        text_turn_rect_x = under_border_rect.x + 10
+        text_turn_rect_x = under_border_rect.x + (self.settings.screen_width // 60)
         text_turn_rect_y = under_border_rect.y  + (under_border_rect.height - text_turn_rect.height) / 2
         self.screen.blit(text_turn_surface, (text_turn_rect_x, text_turn_rect_y))
 
@@ -351,10 +414,12 @@ class Chess:
 
         for piece in self.taken_pieces:
             if piece.team == "black":
-                self.screen.blit(piece.img_small, (self.settings.screen_width + 25, 5 + 50 * black))
+                self.screen.blit(piece.img_small, (self.settings.screen_width + self.settings.screen_width_side_screen // 8,
+                                                    (self.settings.screen_heigth // 120) + (self.settings.screen_heigth // 12) * black))
                 black += 1
             else:
-                self.screen.blit(piece.img_small, (self.settings.screen_width + 125, 5 + 50 * white))
+                self.screen.blit(piece.img_small, (self.settings.screen_width + self.settings.screen_width_side_screen // 1.6,
+                                                    (self.settings.screen_heigth // 120) + (self.settings.screen_heigth // 12) * white))
                 white += 1
 
     def draw_winner(self):

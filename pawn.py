@@ -33,6 +33,7 @@ class Pawn(Piece):
 
         if self.pos[0] == 0 or self.pos[0] == 7:
             self.pawn_promotion = True
+            self.game.turn *= -1
 
         self.game.white_moves = self.game.get_all_moves("white", self.game.piece_locations)
         self.game.black_moves = self.game.get_all_moves("black", self.game.piece_locations)
@@ -117,10 +118,11 @@ class Pawn(Piece):
                 y = (grid_width - self.img.get_width()) // 2 + grid_height * i
                 self.screen.blit(imgs[i], (x, y))
 
-            start_y = (self.pos[0] + 4) * grid_height
-            start_x = self.pos[1] * grid_width
-            end_y = ((self.pos[0] + 4) * grid_height) + grid_height // 2
-            end_x = (self.pos[1] + 1) * grid_width
+            marge = grid_width // 7.5
+            start_y = (self.pos[0] + 4) * grid_height + marge
+            start_x = self.pos[1] * grid_width + marge
+            end_y = ((self.pos[0] + 4) * grid_height) + grid_height // 2 - marge
+            end_x = (self.pos[1] + 1) * grid_width - marge
 
             pygame.draw.line(self.screen, self.settings.promotion_cross_color, 
                              (start_x, start_y), (end_x, end_y), self.settings.promotion_cross_thickness)

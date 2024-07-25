@@ -13,10 +13,12 @@ class Settings:
         self.promote_sound = mixer.Sound("sound/promote.mp3")
         self.start_sound = mixer.Sound("sound/start.mp3")
         self.tenseconds_sound = mixer.Sound("sound/tenseconds.mp3")
+
         self.screen_width = 600
         self.screen_heigth = 600
         self.screen_width_side_screen = 200
         self.screen_height_side_screen = 200
+        self.fontsize = int((self.screen_width + self.screen_width_side_screen) // 22.2)
 
         self.bg_color = "#D6D4A0"
         self.FPS = 60
@@ -25,8 +27,10 @@ class Settings:
         self.under_border_color = "#2F9C95"
         self.under_right_border_color = "#565264"
 
-        self.forfeit_font = pygame.font.Font('freesansbold.ttf', 36)
-        self.turn_font = pygame.font.Font('freesansbold.ttf', 36)
+        self.forfeit_font = pygame.font.Font('freesansbold.ttf', self.fontsize)
+        self.forfeit_font_color = (0, 0, 0)
+        self.turn_font = pygame.font.Font('freesansbold.ttf', self.fontsize)
+        self.turn_font_color = (0, 0, 0)
 
         self.white_bg_color = (118,150,86)
         self.black_bg_color = (255,255,255)
@@ -35,7 +39,7 @@ class Settings:
 
         self.winner_bg_color = (0, 0, 0)
         self.winner_scale = 1.5
-        self.winner_font = pygame.font.Font('freesansbold.ttf', 36)
+        self.winner_font = pygame.font.Font('freesansbold.ttf', self.fontsize)
         self.winner_text_color = (255, 255, 255)
 
         self.promotion_bg_color = (30, 30, 30)
@@ -43,5 +47,11 @@ class Settings:
         self.promotion_cross_thickness = 3
 
         self.counter = 30
-        self.checking_color = "dark red"
+        self.checking_color = (255, 0, 0)
         self.checking_thickness = 5
+
+        self.timer = 300
+        self.timer_bg_color = (255, 0, 0)
+        self.timer_white_color = (255, 255, 255)
+        self.timer_black_color = (0, 0, 0)
+        self.timer_font = pygame.font.Font('freesansbold.ttf', self.fontsize)
