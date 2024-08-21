@@ -1,6 +1,4 @@
 from piece import Piece
-from rook import Rook
-from bishop import Bishop
 
 class Queen(Piece):
     def __init__(self, team, pos, game):
@@ -8,6 +6,11 @@ class Queen(Piece):
 
     def __repr__(self):
         return f"{self.team} queen at ({self.pos})"
+    
+    def __eq__(self, other):
+        if isinstance(other, Queen):
+            return self.team == other.team and self.name == other.name and self.pos == other.pos
+        return False
 
     def get_available_moves(self, piece_locations):
         available_moves = []

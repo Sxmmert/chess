@@ -15,6 +15,11 @@ class Pawn(Piece):
     def __repr__(self):
         return f"{self.team} pawn at ({self.pos})"
     
+    def __eq__(self, other):
+        if isinstance(other, Pawn):
+            return self.team == other.team and self.name == other.name and self.pos == other.pos
+        return False
+      
     def move(self, clicked_idx):
         super().move(clicked_idx)
         self.first_move = False

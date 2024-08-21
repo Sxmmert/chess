@@ -8,6 +8,11 @@ class Rook(Piece):
     def __repr__(self):
         return f"{self.team} rook at ({self.pos})"
     
+    def __eq__(self, other):
+        if isinstance(other, Rook):
+            return self.team == other.team and self.name == other.name and self.pos == other.pos
+        return False
+    
     def get_available_moves(self, piece_locations):
         available_moves = []
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]

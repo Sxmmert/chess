@@ -68,10 +68,7 @@ class Piece:
     
     def make_rect(self):
         self.available_moves_rect = []
-        # width = self.game.settings.screen_width / 8
-        # height = self.game.settings.screen_heigth / 8
         for move in self.available_moves:
-                # self.available_moves_rect.append(pygame.Rect(move[1] * width, move[0] * height, width, height))
                 self.available_moves_rect.append(self.pos_to_rect(move))
 
     def pos_to_rect(self, pos):
@@ -88,6 +85,10 @@ class Piece:
             self.game.taken_pieces.append(self.game.piece_locations[clicked_idx])
             self.piece_taken = True
             self.settings.capture_sound.play()
+            self.game.repeat_moves_count = 0
+            self.game.board_history = []
+        else:
+            self.game.moves_count += 1
         self.game.piece_locations[self.idx] = 0
         self.idx = clicked_idx
         self.game.piece_locations[clicked_idx] = self
@@ -95,5 +96,6 @@ class Piece:
         self.available_moves_rect = []
         self.game.turn *= -1
         self.game.last_selected = Piece("Default", "Default", (-1, -1), self)
+        self.game.board_history.append(self.game.piece_locations[:])
 
         self.settings.move_sound.play()

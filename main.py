@@ -38,8 +38,10 @@ class Chess:
         self.piece_locations = [0] * 64
         self.legal_moves_white = []
         self.legal_moves_black = []
+        self.moves_count = 0
         self.initialize_pieces()
         self.settings.start_sound.play()
+
         self.white_timer = self.settings.timer
         self.black_timer = self.settings.timer
         self.turn_start_time = time.time()
@@ -56,6 +58,12 @@ class Chess:
         
         self.grid_cells = []
         self.initialize_grid()
+
+        self.board_history = [self.piece_locations[:]]
+        self.repeat_moves_count = 0
+
+    def test(self):
+        print("test") 
 
     def initialize_grid(self):
         width = self.settings.screen_width / 8
@@ -96,6 +104,7 @@ class Chess:
             self.check_events()
             self.simulate_move()
             self.check_winner()
+            self.check_draw()
             self.update_screen()
             
     def check_pieces(self):
@@ -186,9 +195,9 @@ class Chess:
     def check_winner(self):
         if self.legal_moves_black == []:
             self.winner = "white"
-            if self.play_once_sound: self.settings.check_sound.play()
+            if self.play_ending_sound_once: self.settings.check_sound.play()
         if self.legal_moves_white == []:
-            if self.play_once_sound: self.settings.check_sound.play()
+            if self.play_ending_sound_once: self.settings.check_sound.play()
             self.winner = "black"
 
         self.check_time()
@@ -197,6 +206,19 @@ class Chess:
             self.playing = False
             self.play_ending_sound_once = False
             self.settings.end_sound.play()
+
+    def check_draw(self):
+        self.repeat_moves_count = -1
+        for board in self.board_history:
+            repeat = True
+            for i in range(len(self.piece_locations)):
+                if board[i] != self.piece_locations[i]:
+                    repeat = False
+                    break
+            if repeat: self.repeat_moves_count += 1
+
+        if self.repeat_moves_count == 2 or self.moves_count == 100:
+            self.winner = "draw"
 
     def check_time(self):
         current_time = time.time()
@@ -230,8 +252,7 @@ class Chess:
                 self.check_event_mousedown(event)
 
             elif event.type == pygame.KEYDOWN:
-                print(self.black_timer)
-                print(self.white_timer)
+                self.test()
 
     def check_event_mousedown(self, event):
         if event.button == 1:
@@ -434,11 +455,10 @@ class Chess:
         winner_rect = pygame.Rect(rect_x, rect_y, rect_width, rect_height)
         pygame.draw.rect(self.screen, winner_bg_color, winner_rect)
 
-        text = "winner white" if self.winner == "white" else "winner black"
+        text = "winner " + self.winner if self.winner != "draw" else "draw"
         text_surface = self.settings.winner_font.render(text, True, self.settings.winner_text_color)
         text_rect = text_surface.get_rect(center=(rect_x + rect_width // 2, rect_y + rect_height // 2))
         self.screen.blit(text_surface, text_rect)
-
 
 if __name__ == '__main__':
     chess = Chess()
