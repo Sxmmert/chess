@@ -18,6 +18,9 @@ class Chess:
             (self.settings.screen_width + self.settings.screen_width_side_screen, self.settings.screen_heigth + self.settings.screen_height_side_screen))
         pygame.display.set_caption("Chess")
         self.clock = pygame.time.Clock()
+        self.reset()
+
+    def reset(self):
         self.counter = 0
         self.turn = 1
         self.last_selected = Piece("Default", "Default", (-1, -1), self)
@@ -63,7 +66,15 @@ class Chess:
         self.repeat_moves_count = 0
 
     def test(self):
-        print("test") 
+        self.piece_locations = [0] * 64
+        piece = self.get_piece_class("king")("white", [0, 0], self)
+        self.piece_locations[0] = piece
+
+        piece = self.get_piece_class("king")("black", [7, 7], self)
+        self.piece_locations[63] = piece
+
+        piece = self.get_piece_class("knight")("white", [0, 1], self)
+        self.piece_locations[1] = piece
 
     def initialize_grid(self):
         width = self.settings.screen_width / 8
@@ -129,7 +140,7 @@ class Chess:
                     self.promotion = piece
 
 
-    def is_king_in_check(self, team,):
+    def is_king_in_check(self, team):
         if team == "white":
             for move in self.black_moves:
                 if move == self.king_white.pos:
@@ -193,10 +204,10 @@ class Chess:
             piece_locations = self.piece_locations
 
     def check_winner(self):
-        if self.legal_moves_black == []:
+        if self.legal_moves_black == [] and self.king_white.in_check:
             self.winner = "white"
             if self.play_ending_sound_once: self.settings.check_sound.play()
-        if self.legal_moves_white == []:
+        if self.legal_moves_white == [] and self.king_black.in_check:
             if self.play_ending_sound_once: self.settings.check_sound.play()
             self.winner = "black"
 
@@ -219,6 +230,44 @@ class Chess:
 
         if self.repeat_moves_count == 2 or self.moves_count == 100:
             self.winner = "draw"
+
+        if self.legal_moves_black == [] and not self.king_white.in_check:
+            self.winner = "draw"
+            if self.play_ending_sound_once: self.settings.check_sound.play()
+        if self.legal_moves_white == [] and not self.king_black.in_check:
+            if self.play_ending_sound_once: self.settings.check_sound.play()
+            self.winner = "draw"
+
+        black_pieces = []
+        white_pieces = []
+        for piece in filter(lambda piece: piece != 0, self.piece_locations):
+            if piece.team == "white":
+                white_pieces.append(piece)
+            else:
+                black_pieces.append(piece)
+        if len(black_pieces) <= 2 and len(white_pieces) <= 2:
+            black_insufficient = False
+            white_insufficient = False
+            for piece in black_pieces:
+                if piece.name == "king":
+                    black_insufficient = True
+                    continue
+                if piece.name == "knight" or piece.name == "bishop":
+                    black_insufficient = True
+                else:
+                    black_insufficient = False
+                    break
+            for piece in white_pieces:
+                if piece.name == "king":
+                    white_insufficient = True
+                    continue
+                if piece.name == "knight" or piece.name == "bishop":
+                    white_insufficient = True
+                else:
+                    white_insufficient = False
+                    break
+            if white_insufficient and black_insufficient:
+                self.winner = "draw"
 
     def check_time(self):
         current_time = time.time()

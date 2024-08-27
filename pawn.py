@@ -174,7 +174,6 @@ class Pawn(Piece):
             rects[Knight(self.team, self.pos, self.game)] = self.pos_to_rect([self.pos[0] - 1, self.pos[1]])
             rects[Rook(self.team, self.pos, self.game)] = self.pos_to_rect([self.pos[0] - 2, self.pos[1]])
             rects[Bishop(self.team, self.pos, self.game)] = self.pos_to_rect([self.pos[0] - 3, self.pos[1]])
-            # rects["cross"] = self.pos_to_rect([self.pos[0] - 4 + 0.5, self.pos[1]])
             left = self.pos[1] * width
             top = (self.pos[0] - 3.5) * height
             cross_rect = pygame.Rect(left, top, width, height // 2)

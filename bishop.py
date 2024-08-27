@@ -12,6 +12,9 @@ class Bishop(Piece):
             return self.team == other.team and self.name == other.name and self.pos == other.pos
         return False
     
+    def __hash__(self):
+        return hash(self.name)
+    
     def get_available_moves(self, piece_locations):
         available_moves = []
         directions = [(-1, -1), (-1, 1), (1, -1), (1, 1)]
